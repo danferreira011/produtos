@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Executar Spring Boot",
+      "request": "launch",
+      "mainClass": "br.crud.produtos.ProdutosApplication",
+      "projectName": "produtos"
+    }
+  ]
+}

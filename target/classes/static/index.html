@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastro de Produtos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input { margin: 5px; }
+    table { margin-top: 20px; width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    button { margin: 2px; }
+  </style>
+</head>
+<body>
+  <h2>Cadastro de Produtos</h2>
+  
+  <input type="hidden" id="idProduto" />
+  <input type="text" id="nome" placeholder="Nome do Produto" />
+  <input type="number" id="preco" placeholder="Preço" step="0.01" />
+  <button onclick="salvar()">Cadastrar / Atualizar</button>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Produto</th>
+        <th>Preço</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-produtos"></tbody>
+  </table>
+
+  <script>
+    const api = "http://localhost:8080/api/produtos";
+
+    function listar() {
+      fetch(api)
+        .then(res => res.json())
+        .then(produtos => {
+          const tabela = document.getElementById("tabela-produtos");
+          tabela.innerHTML = "";
+          produtos.forEach(p => {
+            const row = `
+              <tr>
+                <td>${p.id}</td>
+                <td>${p.nome}</td>
+                <td>R$ ${p.preco.toFixed(2)}</td>
+                <td>
+                  <button onclick='editar(${JSON.stringify(p)})'>Editar</button>
+                  <button onclick="deletar(${p.id})">Excluir</button>
+                </td>
+              </tr>
+            `;
+            tabela.innerHTML += row;
+          });
+        });
+    }
+
+    function salvar() {
+      const id = document.getElementById("idProduto").value;
+      const nome = document.getElementById("nome").value;
+      const preco = parseFloat(document.getElementById("preco").value);
+
+      const produto = { nome, preco };
+
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${api}/${id}` : api;
+
+      fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(produto)
+      })
+        .then(() => {
+          limparCampos();
+          listar();
+        });
+    }
+
+    function editar(produto) {
+      document.getElementById("idProduto").value = produto.id;
+      document.getElementById("nome").value = produto.nome;
+      document.getElementById("preco").value = produto.preco;
+    }
+
+    function deletar(id) {
+      fetch(`${api}/${id}`, { method: "DELETE" })
+        .then(() => listar());
+    }
+
+    function limparCampos() {
+      document.getElementById("idProduto").value = "";
+      document.getElementById("nome").value = "";
+      document.getElementById("preco").value = "";
+    }
+
+    listar();
+  </script>
+</body>
+</html>
